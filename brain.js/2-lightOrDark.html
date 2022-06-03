@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html; charset=windows-1252" http-equiv="Content-Type">
+    <script src="https://unpkg.com/brain.js"></script>
+</head>
+
+<body>
+    <h1>Deep Learning with brain.js</h1>
+    <div id="demo"></div>
+
+    <script>
+        // Create a Neural Network
+        const net = new brain.NeuralNetwork();
+
+        // Train the Network with 4 input objects
+        net.train([
+            // White RGB(255, 255, 255)
+            { input: [255 / 255, 255 / 255, 255 / 255], output: { light: 1 } },
+            // Lightgrey (192,192,192)
+            { input: [192 / 255, 192 / 255, 192 / 255], output: { light: 1 } },
+            // Darkgrey (64, 64, 64)
+            { input: [65 / 255, 65 / 255, 65 / 255], output: { dark: 1 } },
+            // Black (0, 0, 0)
+            { input: [0, 0, 0], output: { dark: 1 } },
+        ]);
+
+        // What is the expected output of red 
+        let result = net.run([255 / 255, 0 / 255, 0 / 255]);
+
+        // Display the probability of "dark" and "light"
+        document.getElementById("demo").innerHTML =
+            "Dark: " + result["dark"] + "<br>" + "Light: " + result["light"];
+    </script>
+</body>
+
+</html>
+
+
+<!-- 
+        A Neural Network is created with: new brain.NeuralNetwork()
+
+The network is trained with network.train([examples])
+
+The examples represent 4 input values a corresponding output value.
+
+With network.run([0,0,128/255]), you ask "What is the likely output of dark blue?"
+
+The answer from the network is:
+
+Dark: 95%
+Light: 4%
+Why not edit the example to test the likely output of yellow or red?
+     -->
