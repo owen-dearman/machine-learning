@@ -1,0 +1,102 @@
+<!-- 
+    Use TensorFlow to predict Y values based on X inputs
+    Y = 1.2 * x + 5
+    The Tensorflow model does not know the function
+ -->
+
+<!DOCTYPE html>
+<html>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<body>
+    <p id="message">Model is training!</p>
+    <div id="myPlot" style="width:100%;max-width:700px"></div>
+    <div id="myTable" style="width:100%;max-width:700px"></div>
+
+    <script>
+        //create training data
+        //create a tensor with 5 x values
+        const xs = tf.tensor([0, 1, 2, 3, 4])
+        //create a tensor with 5 correct y values
+        const ys = xs.mul(1.2).add(5)
+
+        //define linear regression model
+        //create a sequential model - output from one layer is input to the next layer
+        const model = tf.sequential();
+
+        //add one dense layer to the model
+        //the layer is only 1 unit (tensor) and the shape is 1-dimensional
+        //In a dense layer, every node is connected to every node in the preceding layer
+        model.add(tf.layers.dense({ units: 1, inputShape: [1] }))
+
+        //specify loss and optimiser
+        //compile model using meanSquaredError as loss function and sgd (stochastic gradient descent) as optimizer function
+        model.compile({ loss: "meanSquaredError", optimizer: "sgd" })
+
+        //train the model
+        //train the model using xs and ys with 500 repeats
+        model.fit(xs, ys, { epochs: 500 }).then(() => useModel())
+
+        //use the model
+        //after it is trained, you can use it for many different purposes
+        //This example predicts 10 y values, given 10 x values, and calls a function to plot the predictions in a graph
+        function useModel() {
+            const xMax = 10
+            const xArr = []
+            const yArr = []
+            for (let x = 0; x <= xMax; x++) {
+                let result = model.predict(tf.tensor([Number(x)]));
+                result.data().then(y => {
+                    xArr.push(x)
+                    yArr.push(Number(y));
+                    if (x === xMax) {
+                        plot(xArr, yArr)
+                        displayPredictions()
+                    }
+                })
+            }
+            document.getElementById('message').style.display = "none";
+        }
+
+
+        function plot(xArr, yArr) {
+            const predictions = { x: xArr, y: yArr, mode: "markers", type: "scatter" };
+            const lobf = { x: [0, 11], y: [(0 * 1.2) + 5, (11 * 1.2) + 5], mode: "lines", type: "scatter" }
+            const layout = {
+                xaxis: { range: [0, 11] },
+                yaxis: { range: [0, 25] },
+            };
+
+            Plotly.newPlot("myPlot", [predictions, lobf], layout)
+
+        }
+
+        //function to display the raw prediction data
+        function displayPredictions() {
+            const xMax = 10;
+            const xArr = [];
+            const yArr = [];
+            for (let x = 0; x <= xMax; x++) {
+                let result = model.predict(tf.tensor([Number(x)]));
+                result.data().then(y => {
+                    xArr.push(x);
+                    yArr.push(Number(y));
+                    if (x == xMax) { display(xArr, yArr) };
+                });
+            }
+
+        }
+
+        function display(xArr, yArr) {
+            let text = "Correct Predicted<br>";
+            for (let i = 0; i < xArr.length; i++) {
+                text += (xArr[i] * 1.2 + 5).toFixed(1) + "<      >" + yArr[i].toFixed(4) + "<br>";
+            }
+            document.getElementById('myTable').innerHTML = text;
+        }
+    </script>
+
+</body>
+
+</html>

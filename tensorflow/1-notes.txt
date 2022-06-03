@@ -1,0 +1,59 @@
+A tensor can be created from an n-dimensional array:
+    const tensorA = tf.tensor([[1, 2], [3, 4], [5, 6]]);
+
+A tensor can be created from an array and a shape parameter:
+    const shape = [2,2]
+    const tensorA = tf.tensor([1,2,3,4], shape)
+    const tensorB = tf.tensor([1,2,3,4],[2,2])
+     //=> [[1,2],[3,4]]
+
+When you create a tensor, you can specify the data type as a third parameter
+    const tensorB = tf.tensor([1,2,3,4],[2,2],"int32")
+
+You can get the data behind a tensor with tensor.data()
+    const tensorB = tf.tensor([1,2,3,4],[2,2])
+    tensorB.data().then((d) => display(d))
+
+    function display(d){
+        document.getElementById("demo").innerHTML = data;
+    }
+
+You can get the array behind a tensor using tensor.array()
+    const tensorA = tf.tensor([[1, 2], [3, 4]]);
+    tensorA.array().then(array => display(array[0]));
+
+    function display(data) {
+    document.getElementById("demo").innerHTML = data;
+    }
+
+You can add and subtract tensors using tensorA.add(tensorB) and tensorA.subtract(tensorB)
+    const tensorA = tf.tensor([[1,-2],[5,6],[1,0]])
+    const tensorB = tf.tensor([[4,4],[3,0],[,1,2]])
+
+    const tensorC = tensorA.add(tensorB)
+    //=> [[5,2],[8,6],[2,2]]
+
+    const tensorC = tensorA.sub(tensorB);
+    //=> [[-3,6],[2,6],[0,-2]]
+
+Same thing applies for mult and div
+You can square a tensor with tensor.square()
+The number of elements in a tensor is the product of the sizes in the shape.
+Since there can be different shapes with the same size, it is often useful to reshape a tensor to other shapes with the same size.
+You can reshape a tensor using tensor.reshape():
+    const tensorA = tf.tensor([[1,2],[3,4]])
+    const tensorB = tensorA.reshape([2,2])
+    //=> [[1,2],[3,4]]
+    const tensorB = tensorA.reshape([4,1])
+    //=> [[1],[2],[3],[4]]
+
+TensorFlow optimizers:
+Adadelta -Implements the Adadelta algorithm.
+Adagrad - Implements the Adagrad algorithm.
+Adam - Implements the Adam algorithm.
+Adamax - Implements the Adamax algorithm.
+Ftrl - Implements the FTRL algorithm.
+Nadam - Implements the NAdam algorithm.
+Optimizer - Base class for Keras optimizers.
+RMSprop - Implements the RMSprop algorithm.
+SGD - Stochastic Gradient Descent Optimizer.
