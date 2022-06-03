@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<script src="Perceptron.js"></script>
+<script src="myplotlib.js"></script>
+
+<body>
+    <canvas id="canvas" width="400px" height="400px" style="width:100%;max-width:400px;border:1px solid black"></canvas>
+
+    <script>
+        const numPoints = 500
+        const learningRate = 0.00001
+        const numTrains = 10000
+
+        const plotter = new XYPlotter("canvas");
+        plotter.transformXY();
+        const xMax = plotter.xMax
+        const yMax = plotter.yMax
+        const xMin = plotter.xMin
+        const yMin = plotter.yMin
+
+        const xPoints = []
+        const yPoints = []
+        for (let i = 0; i < numPoints; i++) {
+            xPoints[i] = Math.random() * xMax
+            yPoints[i] = Math.random() * yMax
+        }
+
+        function f(x) {
+            return x * 0.3 + 70
+        }
+
+        plotter.plotLine(xMin, f(xMin), xMax, f(xMax), "orange")
+
+        const desired = []
+        for (let i = 0; i < numPoints; i++) {
+            if (yPoints[i] > f(xPoints[i])) {
+                desired[i] = 1
+            } else {
+                desired[i] = 0
+            }
+        }
+
+        const ptron = new Perceptron(2, learningRate)
+
+        for (let j = 0; j <= numTrains; j++) {
+            for (let i = 0; i < numPoints; i++) {
+                const currentPoint = [xPoints[i], yPoints[i]]
+                ptron.train(currentPoint, desired[i])
+            }
+        }
+
+        //plot the points (this plots the points used for training)
+        for (let i = 0; i < numPoints; i++) {
+            const x = xPoints[i]
+            const y = yPoints[i]
+            let guess = ptron.activate([x, y, ptron.bias])
+            let colour = "red";
+            if (guess === 0) {
+                colour = "green"
+            }
+            plotter.plotPoint(x, y, colour)
+
+        }
+
+    </script>
+</body>
+
+</html>
+
+<!-- 
+    We provide a line and work out whether each input is 1 or 0 based on being above or below the line
+    We create our perceptron and train it to detect whether the point is above or below the line
+    Each input is trained 10,000 times.
+        It starts with a random weight and returns 1 or 0 based on this
+        If desired (1/0) - guess (1/0) = 0
+            then it guessed the right result
+        If !==0
+            then it guessed the wrong result
+            adjusts each weight in the model by
+                weight * learning weight (0.0001) * error(1/-1) * input no.
+        This means that next time the model is trained, the weights have been adjusted and the guesses so be more accurate
+    You can see that even after this training, not all of the points are the right colour
+    This can be improved by increasing the number of times the model is trained
+
+
+ -->

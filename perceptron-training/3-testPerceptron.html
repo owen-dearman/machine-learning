@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<script src="Perceptron.js"></script>
+<script src="myplotlib.js"></script>
+
+<body>
+  <div id="error Count"></div>
+  <canvas id="myCanvas" width="400px" height="400px" style="width:100%;max-width:400px;border:1px solid black"></canvas>
+  <script>
+
+    // Initiate Values
+    const numTrainingPoints = 750;
+    const learningRate = 0.00001;
+    const numTrains = 100000
+    const numTestData = 500
+
+    // Create a Plotter
+    const plotter = new XYPlotter("myCanvas");
+    plotter.transformXY();
+    const xMax = plotter.xMax;
+    const yMax = plotter.yMax;
+    const xMin = plotter.xMin;
+    const yMin = plotter.yMin;
+
+    // Create Random XY Points
+    const xPoints = [];
+    const yPoints = [];
+    for (let i = 0; i < numTrainingPoints; i++) {
+      xPoints[i] = Math.random() * xMax;
+      yPoints[i] = Math.random() * yMax;
+    }
+
+    // Line Function
+    function f(x) {
+      return x * 1.2 + 50;
+    }
+
+    //Plot the Line
+    plotter.plotLine(xMin, f(xMin), xMax, f(xMax), "black");
+
+    // Compute Desired Answers
+    const desired = [];
+    for (let i = 0; i < numTrainingPoints; i++) {
+      desired[i] = 0;
+      if (yPoints[i] > f(xPoints[i])) { desired[i] = 1 }
+    }
+
+    // Create a Perceptron
+    const ptron = new Perceptron(2, learningRate);
+
+    // Train the Perceptron
+    for (let T = 0; T <= numTrains; T++) {
+      for (let i = 0; i < numTrainingPoints; i++) {
+        ptron.train([xPoints[i], yPoints[i]], desired[i]);
+      }
+    }
+
+    // Test Against Unknown Data. This plots different points to those used in training
+    let errors = 0
+    for (let i = 0; i < numTestData; i++) {
+      let x = Math.random() * xMax;
+      let y = Math.random() * yMax;
+      let guess = ptron.activate([x, y, ptron.bias]);
+      let color = "black";
+      if (guess == 0) color = "blue";
+      plotter.plotPoint(x, y, color);
+      if (y > f(x) && guess == 0) { errors++ }
+      plotter.plotPoint(x, y, color);
+    }
+    document.getElementById("error Count").innerHTML = errors + " Errors out of " + numTestData;
+  </script>
+</body>
+
+</html>
+
+
+<!-- How to tune the perceptron:
+Adjust the learning rate
+Increase the number of training data
+Increase the number of training iterations
+ -->

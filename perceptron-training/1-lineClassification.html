@@ -1,0 +1,61 @@
+<!-- Programming A Perceptron
+1. Create a plotter with 500 random points
+2. Create a line function and display it
+3. Compute the points that appear above the line
+4 . Draw all points with those above the line in a different colour
+  -->
+
+
+<!DOCTYPE html>
+<html>
+<script src="myplotlib.js"></script>
+
+<body>
+  <canvas id="myCanvas" width="400px" height="400px" style="width:100%;max-width:400px;border:1px solid black"></canvas>
+
+  <script>
+    // Create a Plotter
+    const plotter = new XYPlotter("myCanvas");
+    plotter.transformXY();
+    const xMax = plotter.xMax;
+    const yMax = plotter.yMax;
+    const xMin = plotter.xMin;
+    const yMin = plotter.yMin;
+
+    // Create Random XY Points
+    const numPoints = 500;
+    const xPoints = [];
+    const yPoints = [];
+    for (let i = 0; i < numPoints; i++) {
+      xPoints[i] = Math.random() * xMax;
+      yPoints[i] = Math.random() * yMax;
+    }
+
+    // Line Function
+    function f(x) {
+      return x * -0.5 + 300;
+    }
+
+    //Plot the Line
+    plotter.plotLine(xMin, f(xMin), xMax, f(xMax), "black");
+
+    // Compute Desired Answers
+    const desired = [];
+    for (let i = 0; i < numPoints; i++) {
+      desired[i] = 0;
+      if (yPoints[i] > f(xPoints[i])) {
+        desired[i] = 1
+      }
+    }
+    //Creates an array of 1s and 0s [1,1,1,0,0] to discern whether they are above the line
+
+    // Diplay Desired Result
+    for (let i = 0; i < numPoints; i++) {
+      let color = "blue";
+      if (desired[i]) color = "black";
+      plotter.plotPoint(xPoints[i], yPoints[i], color);
+    }
+  </script>
+</body>
+
+</html>
