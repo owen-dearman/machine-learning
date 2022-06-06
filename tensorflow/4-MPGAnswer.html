@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+
+<body>
+
+    <h2>TensorFlow JavaScript</h2>
+    <h3>Training data:</h3>
+    <div id="plot1"></div>
+    <div id="plot2"></div>
+    <script>
+
+        // Extract Correct Data 
+        function extractData(obj) {
+            return { x: obj.Horsepower, y: obj.Miles_per_Gallon };
+        }
+        function removeErrors(obj) {
+            return obj.x != null && obj.y != null;
+        }
+
+        // Plot Data
+        function tfPlot(values, surface) {
+            tfvis.render.scatterplot(surface,
+                { values: values, series: ['Original', 'Predicted'] },
+                { xLabel: 'Horsepower', yLabel: 'MPG', });
+        }
+
+        // Main Function
+        async function runTF() {
+            const response = await fetch("https://storage.googleapis.com/tfjs-tutorials/carsData.json")
+            let values = await response.json()
+            values = values.map(extractData).filter(removeErrors)
+
+            /*
+            When a model is trained, the data is divided into small sets (batches). Each batch is then fed to the model. Shuffling is
+            important to prevent the model getting the same data over and over again. If the same data is used twice, the model will not be able to generalise the data and give 
+            the right output. Shuffling gives a better variety of data in each batch
+            */
+
+            //plot the data
+            const surface1 = document.getElementById("plot1");
+            const surface2 = document.getElementById("plot2");
+            tfPlot(values, surface1);
+
+            //shuffle
+            // tf.util.shuffle(data)
+            //map x values to Tensor inputs
+            const inputs = values.map(obj => obj.x);
+            //map y values to Tensore labels
+            const labels = values.map(obj => obj.y);
+
+            //convert inputs and labels to 2D tensors
+            const inputTensor = tf.tensor2d(inputs, [inputs.length, 1]);
+            const labelTensor = tf.tensor2d(labels, [labels.length, 1]);
+
+            //Data should be normalised before being used in a deep neural network.
+            //Range of 0-1 using min-max are often best for numerical data:
+            const inputMin = inputTensor.min();
+            const inputMax = inputTensor.max();
+            const labelMin = labelTensor.min();
+            const labelMax = labelTensor.max();
+            //What is this?
+            const nmInputs = inputTensor.sub(inputMin).div(inputMax.sub(inputMin))
+            const nmLabels = labelTensor.sub(labelMin).div(labelMax.sub(labelMin))
+
+            //Define a ML model
+            //create a sequential model. Input flows directly to the output. Allows to build layer to layer
+            const model = tf.sequential()
+            //adds the two layers to the model
+            //tf.layer.dense multiplies its input by a weight matrix and adds a bias to the result
+            //inputShape[1] because we have 1 input (horsepower)
+            //units: 1 defines the size of the weight matrix - 1 weight for each input
+            model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }))
+            model.add(tf.layers.dense({ units: 1, useBias: true }))
+
+            //Compile the model with a specified optimizer and loss function
+            model.compile({ loss: "meanSquaredError", optimizer: "sgd" });
+            //meanSquaredError is the function we want to use to compare model predictions and true values
+
+            //train model 
+            await trainModel(model, nmInputs, nmLabels, surface2)
+
+            /*
+            When a model is trained, it is important to test and evaluate it
+            We do this by inspecting what the model predicts for a range of different inputs
+            First, we have to un-normalise the data
+            */
+            let unX = tf.linspace(0, 1, 100)
+            let unY = model.predict(unX.reshape([100, 1]));
+
+            const unNormunX = unX.mul(inputMax.sub(inputMin)).add(inputMin);
+            const unNormunY = unY.mul(labelMax.sub(labelMin)).add(labelMin);
+            unX = unNormunX.dataSync()
+            unY = unNormunY.dataSync()
+
+            //then we can look at the result
+
+            const predicted = Array.from(unX).map((val, i) => {
+                return { x: val, y: unY[i] }
+            });
+            tfPlot([values, predicted], surface1)
+
+        }
+        // Asyncronous Function to Train the Model
+        async function trainModel(model, inputs, labels, surface) {
+            const batchSize = 25;
+            const epochs = 50;
+            const callbacks = tfvis.show.fitCallbacks(surface, ['loss'], { callbacks: ['onEpochEnd'] })
+            return await model.fit(inputs, labels,
+                { batchSize, epochs, shuffle: true, callbacks: callbacks }
+            );
+        }
+
+        runTF();
+
+    </script>
+</body>
+
+</html>
